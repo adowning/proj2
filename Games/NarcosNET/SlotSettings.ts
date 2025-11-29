@@ -1,20 +1,6 @@
-// SlotSettings.ts - CreatureFromTheBlackLagoonNET game specific settings
-// Converted from PHP following CONVERT_TO_TYPESCRIPT.md guidelines
 
 import { BaseSlotSettings } from "../../BaseSlotSettings";
 import { ISlotSettingsData } from "../../ISlotSettingsData";
-
-// Strongly-typed reel strips: 'rp' is reel positions array and each reel may be a string|number array
-export type ReelStrips = {
-    rp: number[];
-    reel1?: Array<string | number>;
-    reel2?: Array<string | number>;
-    reel3?: Array<string | number>;
-    reel4?: Array<string | number>;
-    reel5?: Array<string | number>;
-    reel6?: Array<string | number>;
-    [key: string]: Array<string | number> | number[] | undefined;
-};
 
 export class SlotSettings extends BaseSlotSettings {
 
@@ -25,7 +11,6 @@ export class SlotSettings extends BaseSlotSettings {
     }
 
     private initializeFromGameState(gameStateData: ISlotSettingsData): void {
-        // Initialize game-specific properties
         this.MaxWin = this.shop?.max_win ?? 50000;
         this.increaseRTP = 1;
         this.CurrentDenom = this.game?.denominations?.[0] ?? 1;
@@ -35,19 +20,21 @@ export class SlotSettings extends BaseSlotSettings {
         // Paytable configuration
         this.Paytable = {
             'SYM_0': [0, 0, 0, 0, 0, 0],
-            'SYM_1': [0, 0, 0, 0, 0, 0],
+            'SYM_1': [0, 0, 0, 20, 80, 300],
             'SYM_2': [0, 0, 0, 0, 0, 0],
-            'SYM_3': [0, 0, 0, 25, 250, 750],
-            'SYM_4': [0, 0, 0, 20, 200, 600],
-            'SYM_5': [0, 0, 0, 15, 150, 500],
-            'SYM_6': [0, 0, 0, 10, 100, 400],
-            'SYM_7': [0, 0, 0, 5, 40, 125],
-            'SYM_8': [0, 0, 0, 5, 40, 125],
-            'SYM_9': [0, 0, 0, 4, 30, 100],
-            'SYM_10': [0, 0, 0, 4, 30, 100],
+            'SYM_3': [0, 0, 0, 20, 80, 300],
+            'SYM_4': [0, 0, 0, 20, 80, 300],
+            'SYM_5': [0, 0, 0, 15, 60, 250],
+            'SYM_6': [0, 0, 0, 15, 60, 250],
+            'SYM_7': [0, 0, 0, 10, 30, 120],
+            'SYM_8': [0, 0, 0, 10, 30, 120],
+            'SYM_9': [0, 0, 0, 5, 15, 60],
+            'SYM_10': [0, 0, 0, 5, 15, 60],
+            'SYM_11': [0, 0, 0, 5, 10, 40],
+            'SYM_12': [0, 0, 0, 5, 10, 40]
         };
 
-        // Game configuration
+        // Key Controller
         this.keyController = {
             '13': 'uiButtonSpin,uiButtonSkip',
             '49': 'uiButtonInfo',
@@ -64,6 +51,7 @@ export class SlotSettings extends BaseSlotSettings {
             '187': 'uiButtonSpin'
         };
 
+        // Slot Reels Config
         this.slotReelsConfig = [
             [425, 142, 3],
             [669, 142, 3],
@@ -81,12 +69,15 @@ export class SlotSettings extends BaseSlotSettings {
         this.slotExitUrl = '/';
         this.slotWildMpl = 1;
         this.GambleType = 1;
-        this.slotFreeCount = [0, 0, 0, 10, 15, 20];
+        this.Denominations = this.game?.denominations ?? [1];
+        this.CurrentDenom = this.Denominations[0] ?? 1;
+        this.CurrentDenomination = this.Denominations[0] ?? 1;
+
+        this.slotFreeCount = [0, 0, 0, 10, 10, 10];
         this.slotFreeMpl = 1;
 
         // Get view state from game or default to Normal
         this.slotViewState = (this.game?.slotViewState || 'Normal');
-
         this.hideButtons = [];
 
         // Lines configuration
@@ -97,11 +88,8 @@ export class SlotSettings extends BaseSlotSettings {
         this.Bet = this.game?.bet ? this.game.bet.split(',').map(b => parseInt(b.trim())) : [1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 100, 200, 300];
 
         this.Balance = this.user?.balance ?? 0;
+        this.SymbolGame = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
-        // Symbol game configuration
-        this.SymbolGame = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'];
-
-        // Bank and percentage settings
         this.Bank = this.game?.balance ?? 1000;
         this.Percent = this.shop?.percent ?? 10;
         this.WinGamble = this.game?.rezerv ?? 0;
@@ -117,13 +105,11 @@ export class SlotSettings extends BaseSlotSettings {
             this.Percent = 100;
         }
 
-        // Initialize reel strips from GameReel if available
         this.initializeReelStrips();
     }
 
     private initializeReelStrips(): void {
         const reelStrips = this.gameDataStatic?.reelStrips;
-
         if (reelStrips) {
             for (const reelStrip of ['reelStrip1', 'reelStrip2', 'reelStrip3', 'reelStrip4', 'reelStrip5', 'reelStrip6']) {
                 if (reelStrips[reelStrip] && reelStrips[reelStrip].length > 0) {
@@ -167,7 +153,6 @@ export class SlotSettings extends BaseSlotSettings {
         const pref = garantType !== 'bet' ? '_bonus' : '';
         this.AllBet = bet * lines;
 
-        // Get RTP control configuration
         const linesPercentConfigSpin = this.getLinesPercentConfig('spin');
         const linesPercentConfigBonus = this.getLinesPercentConfig('bonus');
 
@@ -259,7 +244,6 @@ export class SlotSettings extends BaseSlotSettings {
             returnValue = ['win', winLimit];
         }
 
-        // Special case for low balance
         if (garantType === 'bet' && this.GetBalance() <= (2 / this.CurrentDenom)) {
             const randomPush = this.randomInt(1, 10);
             if (randomPush === 1) {
@@ -269,136 +253,6 @@ export class SlotSettings extends BaseSlotSettings {
         }
 
         return returnValue;
-    }
-
-    public GetRandomScatterPos(rp: string[]): number {
-        const rpResult: number[] = [];
-
-        for (let i = 0; i < rp.length; i++) {
-            if (rp[i] === '0') {
-                if (rp[i + 1] && rp[i - 1]) {
-                    rpResult.push(i);
-                }
-                if (rp[i - 1] && rp[i - 2]) {
-                    rpResult.push(i - 1);
-                }
-                if (rp[i + 1] && rp[i + 2]) {
-                    rpResult.push(i + 1);
-                }
-            }
-        }
-
-        this.shuffleArray(rpResult);
-
-        if (rpResult.length === 0) {
-            rpResult[0] = this.randomInt(2, rp.length - 3);
-        }
-
-        return rpResult[0];
-    }
-
-    public GetReelStrips(winType: string, slotEvent: string): ReelStrips {
-        // Handle freespin reel initialization logic from PHP
-        // if( $slotEvent == 'freespin' ) { ... }
-        // Note: The PHP logic re-initializes reel strips from GameReel on every freespin call if needed.
-        // Since we don't have GameReel class available directly, we rely on injected data or assume strips are static/already set.
-        // However, the PHP code does: $reel = new GameReel(); $fArr = $reel->reelsStripBonus;
-        // This suggests different strips for bonus. We should check if `reelsStripBonus` is available in gameDataStatic.
-
-        if (slotEvent === 'freespin') {
-             const reelStripsBonus = this.gameDataStatic?.reelStripsBonus;
-             if (reelStripsBonus) {
-                  // Logic to rotate/shift bonus strips if that was the intent, or just load them.
-                  // PHP: $curReel = array_shift($fArr);
-                  // This seems to imply specific strips for each reel from a bonus set.
-                  // For now, let's assume if bonus strips are present, we use them.
-                  // But standard PHP just loads them.
-                  // Let's rely on standard strip loading if not explicitly complex.
-             }
-        }
-
-        const prs: { [key: number]: number } = {};
-
-        if (winType !== 'bonus') {
-            // Regular spin - random positions
-            for (let index = 0; index < ['reelStrip1', 'reelStrip2', 'reelStrip3', 'reelStrip4', 'reelStrip5', 'reelStrip6'].length; index++) {
-                const reelStrip = `reelStrip${index + 1}`;
-                const reelData = (this as any)[reelStrip];
-                if (Array.isArray(reelData) && reelData.length > 0) {
-                    prs[index + 1] = this.randomInt(0, reelData.length - 3);
-                }
-            }
-        } else {
-            // Bonus spin - ensure scatters
-            const reelsId: number[] = [];
-            const prsLocal: { [key: number]: number } = {};
-
-            for (let index = 0; index < ['reelStrip1', 'reelStrip2', 'reelStrip3', 'reelStrip4', 'reelStrip5', 'reelStrip6'].length; index++) {
-                const reelStrip = `reelStrip${index + 1}`;
-                const reelData = (this as any)[reelStrip];
-                if (Array.isArray(reelData) && reelData.length > 0) {
-                    prsLocal[index + 1] = this.GetRandomScatterPos(reelData);
-                    reelsId.push(index + 1);
-                }
-            }
-
-            const scattersCnt = this.randomInt(3, reelsId.length);
-            this.shuffleArray(reelsId);
-
-            for (let i = 0; i < reelsId.length; i++) {
-                if (i < scattersCnt) {
-                    prs[reelsId[i]] = this.GetRandomScatterPos((this as any)[`reelStrip${reelsId[i]}`]);
-                } else {
-                    const reelData = (this as any)[`reelStrip${reelsId[i]}`];
-                    prs[reelsId[i]] = this.randomInt(0, reelData.length - 3);
-                }
-            }
-        }
-
-        const reel: ReelStrips = {
-            rp: []
-        };
-
-        for (const [index, value] of Object.entries(prs)) {
-            const reelIndex = parseInt(index);
-            const key = (this as any)[`reelStrip${reelIndex}`];
-            if (key && key.length > 0) {
-                // Handle wrapping for end of reel
-                const cnt = key.length;
-                const v_minus_1 = value - 1 < 0 ? key[cnt - 1] : key[value - 1];
-                const v_plus_1 = value + 1 >= cnt ? key[0] : key[value + 1];
-                const v_plus_2 = value + 2 >= cnt ? key[value + 2 - cnt] : key[value + 2];
-
-                reel[`reel${reelIndex}`] = [
-                    key[value],
-                    key[value + 1] !== undefined ? key[value + 1] : key[0], // Handled simpler in PHP: $key[$value], $key[$value+1]...
-                    key[value + 2] !== undefined ? key[value + 2] : key[1],
-                    ''
-                ];
-                // PHP logic:
-                // $reel['reel'.$index][0] = $key[$value];
-                // $reel['reel'.$index][1] = $key[$value + 1];
-                // $reel['reel'.$index][2] = $key[$value + 2];
-                // $reel['reel'.$index][3] = '';
-                // Note PHP array access on $key[$cnt] = $key[0] implies wrapping logic done beforehand or implicitly.
-                // In my TS port, I should ensure wrapping.
-
-                const p0 = value;
-                const p1 = (value + 1) % cnt;
-                const p2 = (value + 2) % cnt;
-
-                reel[`reel${reelIndex}`] = [
-                    key[p0],
-                    key[p1],
-                    key[p2],
-                    ''
-                ];
-
-                (reel['rp'] as number[]).push(value);
-            }
-        }
-
-        return reel;
     }
 
     public getNewSpin(game: any, spinWin: number, bonusWin: number, lines: number, garantType: string = 'bet'): any {
@@ -445,24 +299,173 @@ export class SlotSettings extends BaseSlotSettings {
         return win[number];
     }
 
-    private getLinesPercentConfig(type: string): { [key: string]: any } {
-        const defaultConfig = {
-            'line1': { '1_100': 20 },
-            'line3': { '1_100': 15 },
-            'line5': { '1_100': 12 },
-            'line7': { '1_100': 10 },
-            'line9': { '1_100': 8 },
-            'line10': { '1_100': 6 },
-            'line1_bonus': { '1_100': 100 },
-            'line3_bonus': { '1_100': 80 },
-            'line5_bonus': { '1_100': 60 },
-            'line7_bonus': { '1_100': 50 },
-            'line9_bonus': { '1_100': 40 },
-            'line10_bonus': { '1_100': 35 }
+    public GetRandomScatterPos(rp: string[], rsym: string): number {
+        const rpResult: number[] = [];
+
+        for (let i = 0; i < rp.length; i++) {
+            if (rp[i] == rsym) {
+                if (rsym == '2') {
+                    if (rp[i + 1] && rp[i - 1]) {
+                        rpResult.push(i + 1);
+                    }
+                } else {
+                    if (rp[i + 1] && rp[i - 1]) {
+                        rpResult.push(i);
+                    }
+                    if (rp[i - 1] && rp[i - 2]) {
+                        rpResult.push(i - 1);
+                    }
+                    if (rp[i + 1] && rp[i + 2]) {
+                        rpResult.push(i + 1);
+                    }
+                }
+            }
+        }
+
+        this.shuffleArray(rpResult);
+
+        if (rpResult.length === 0) {
+            rpResult[0] = this.randomInt(2, rp.length - 3);
+        }
+
+        return rpResult[0];
+    }
+
+    public GetCluster(reels: any): any {
+        // Logic ported from PHP GetCluster
+        // Checks neighbors (left, top, right, bottom) for '2' or '2c' connectivity
+        // Assuming reels['reelX'][row] format
+
+        // Forward Pass (Top-Left to Bottom-Right)
+        for (let r = 1; r <= 5; r++) {
+            for (let p = 0; p <= 2; p++) {
+                if (reels['reel' + r][p] == '2' || reels['reel' + r][p] == '2c') {
+                    let connected = false;
+                    // Check Left
+                    if (r > 1 && reels['reel' + (r - 1)][p] == '2c') connected = true;
+                    // Check Top
+                    if (p > 0 && reels['reel' + r][p - 1] == '2c') connected = true;
+                    // Check Right (if already processed and 2c)
+                    if (r < 5 && reels['reel' + (r + 1)][p] == '2c') connected = true;
+                    // Check Bottom
+                    if (p < 2 && reels['reel' + r][p + 1] == '2c') connected = true;
+
+                    if (connected) {
+                        reels['reel' + r][p] = '2c';
+                    }
+                }
+            }
+        }
+
+        // Backward Pass (Bottom-Right to Top-Left) to propagate connections back
+        for (let r = 5; r >= 1; r--) {
+            for (let p = 2; p >= 0; p--) {
+                if (reels['reel' + r][p] == '2' || reels['reel' + r][p] == '2c') {
+                    let connected = false;
+                    if (r > 1 && reels['reel' + (r - 1)][p] == '2c') connected = true;
+                    if (p > 0 && reels['reel' + r][p - 1] == '2c') connected = true;
+                    if (r < 5 && reels['reel' + (r + 1)][p] == '2c') connected = true;
+                    if (p < 2 && reels['reel' + r][p + 1] == '2c') connected = true;
+
+                    if (connected) {
+                        reels['reel' + r][p] = '2c';
+                    }
+                }
+            }
+        }
+        return reels;
+    }
+
+    public GetGambleSettings(): number {
+        const spinWin = this.randomInt(1, this.WinGamble ?? 0);
+        return spinWin;
+    }
+
+    public GetReelStrips(winType: string, slotEvent: string): any {
+        if (slotEvent == 'freespin') {
+            const fArr = this.gameDataStatic?.reelsStripBonus; // Assuming bonus strips are stored here or need logic to load them
+            // In original PHP: $reel = new GameReel(); $fArr = $reel->reelsStripBonus;
+            // Since we don't have GameReel class fully migrated or injected, we rely on reelStrips being available or initialized.
+            // For now, we assume reelStrips are already loaded into properties if they were passed in gameDataStatic or initialized.
+            // If specific bonus strips logic is needed, it should be adapted.
+            // However, looking at base class and init, reelStrips are loaded.
+            // The original code loads from GameReel class directly.
+            // We'll skip re-loading if they are already there or handled by caller.
+        }
+
+        const prs: { [key: number]: number } = {};
+
+        if (winType != 'bonus') {
+            for (let index = 0; index < ['reelStrip1', 'reelStrip2', 'reelStrip3', 'reelStrip4', 'reelStrip5', 'reelStrip6'].length; index++) {
+                const reelStrip = `reelStrip${index + 1}`;
+                const reelData = (this as any)[reelStrip];
+                if (Array.isArray(reelData) && reelData.length > 0) {
+                    prs[index + 1] = this.randomInt(0, reelData.length - 3);
+                }
+            }
+        } else {
+            const randomBonusType = this.randomInt(1, 2);
+            const reelsId = [1, 2, 3, 4, 5];
+
+            if (randomBonusType == 1) {
+                for (let i = 0; i < reelsId.length; i++) {
+                    const reelData = (this as any)[`reelStrip${reelsId[i]}`];
+                    if (i == 0 || i == 2 || i == 4) {
+                        prs[reelsId[i]] = this.GetRandomScatterPos(reelData, '0');
+                    } else {
+                        prs[reelsId[i]] = this.randomInt(0, reelData.length - 3);
+                    }
+                }
+            } else {
+                const sCnt = this.randomInt(3, 5);
+                for (let i = 0; i < reelsId.length; i++) {
+                    const reelData = (this as any)[`reelStrip${reelsId[i]}`];
+                    if (i < sCnt) {
+                        prs[reelsId[i]] = this.GetRandomScatterPos(reelData, '2');
+                    } else {
+                        prs[reelsId[i]] = this.randomInt(0, reelData.length - 3);
+                    }
+                }
+            }
+        }
+
+        const reel: any = {
+            rp: []
         };
 
+        for (const [index, value] of Object.entries(prs)) {
+            const reelIndex = parseInt(index);
+            const key = (this as any)[`reelStrip${reelIndex}`];
+            if (key && key.length > 0) {
+                const cnt = key.length;
+                // Emulate PHP array[-1] access logic
+                const v_minus_1 = value - 1 < 0 ? key[cnt - 1] : key[value - 1];
+
+                reel[`reel${reelIndex}`] = [];
+                reel[`reel${reelIndex}`][0] = v_minus_1; // key[$value - 1]
+                reel[`reel${reelIndex}`][1] = key[value];
+                reel[`reel${reelIndex}`][2] = value + 1 >= cnt ? key[0] : key[value + 1];
+                reel[`reel${reelIndex}`][3] = '';
+                reel['rp'].push(value);
+            }
+        }
+
+        return reel;
+    }
+
+    private getLinesPercentConfig(type: string): { [key: string]: any } {
+        // Implement default or load from gameDataStatic if available
+        // This is a placeholder for the logic found in Game model in PHP
+        const defaultConfig = {
+            'line10': { '0_100': 100 },
+             // ... populate with actual defaults if known or rely on gameDataStatic
+        };
+        // In original: $this->game->get_lines_percent_config('spin');
+        // We assume this data might be passed in gameDataStatic or similar.
+        // For now, returning empty object or need to know where this data comes from in TS.
+        // Assuming it's part of gameDataStatic as per SpaceWars example
         const configKey = type === 'spin' ? 'linesPercentConfigSpin' : 'linesPercentConfigBonus';
-        return this.gameDataStatic?.[configKey] || defaultConfig;
+        return this.gameDataStatic?.[configKey] || {};
     }
 
     private randomInt(min: number, max: number): number {

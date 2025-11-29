@@ -1,51 +1,38 @@
-// SlotSettings.ts - FortuneRangersNET game specific settings
-// Converted from PHP following CONVERT_TO_TYPESCRIPT.md guidelines
 
 import { BaseSlotSettings } from "../../BaseSlotSettings";
 import { ISlotSettingsData } from "../../ISlotSettingsData";
 
-// Strongly-typed reel strips: 'rp' is reel positions array and each reel may be a string|number array
-export type ReelStrips = {
-    rp: number[];
-    reel1?: Array<string | number>;
-    reel2?: Array<string | number>;
-    reel3?: Array<string | number>;
-    reel4?: Array<string | number>;
-    reel5?: Array<string | number>;
-    reel6?: Array<string | number>;
-    [key: string]: Array<string | number> | number[] | undefined;
-};
-
 export class SlotSettings extends BaseSlotSettings {
 
     public constructor(slotSettingsData: ISlotSettingsData) {
-        // Pass data to BaseSlotSettings
         super(slotSettingsData);
         this.initializeFromGameState(slotSettingsData);
     }
 
     private initializeFromGameState(gameStateData: ISlotSettingsData): void {
-        // Initialize game-specific properties
         this.MaxWin = this.shop?.max_win ?? 50000;
         this.increaseRTP = 1;
         this.CurrentDenom = this.game?.denominations?.[0] ?? 1;
         this.scaleMode = 0;
         this.numFloat = 0;
 
-        // Paytable configuration
         this.Paytable = {
             'SYM_0': [0, 0, 0, 0, 0, 0],
             'SYM_1': [0, 0, 0, 0, 0, 0],
             'SYM_2': [0, 0, 0, 0, 0, 0],
-            'SYM_3': [0, 0, 1, 12, 30, 200],
-            'SYM_4': [0, 0, 1, 8, 15, 100],
-            'SYM_5': [0, 0, 0, 4, 8, 30],
-            'SYM_6': [0, 0, 0, 4, 8, 30],
-            'SYM_7': [0, 0, 0, 3, 5, 20],
-            'SYM_8': [0, 0, 0, 3, 5, 20],
+            'SYM_3': [0, 0, 0, 10, 50, 200],
+            'SYM_4': [0, 0, 0, 8, 25, 100],
+            'SYM_5': [0, 0, 0, 7, 15, 30],
+            'SYM_6': [0, 0, 0, 7, 15, 30],
+            'SYM_7': [0, 0, 0, 5, 10, 20],
+            'SYM_8': [0, 0, 0, 5, 10, 20],
+            'SYM_9': [0, 0, 0, 1, 6, 12],
+            'SYM_10': [0, 0, 0, 1, 6, 12],
+            'SYM_11': [0, 0, 0, 1, 5, 10],
+            'SYM_12': [0, 0, 0, 1, 5, 10],
+            'SYM_13': [0, 0, 0, 1, 5, 10]
         };
 
-        // Game configuration
         this.keyController = {
             '13': 'uiButtonSpin,uiButtonSkip',
             '49': 'uiButtonInfo',
@@ -79,27 +66,24 @@ export class SlotSettings extends BaseSlotSettings {
         this.slotExitUrl = '/';
         this.slotWildMpl = 1;
         this.GambleType = 1;
-        this.slotFreeCount = [0, 0, 0, 8, 12, 16];
+        this.Denominations = this.game?.denominations ?? [1];
+        this.CurrentDenom = this.Denominations[0] ?? 1;
+        this.CurrentDenomination = this.Denominations[0] ?? 1;
+
+        this.slotFreeCount = [0, 0, 0, 8, 8, 8];
         this.slotFreeMpl = 1;
 
-        // Get view state from game or default to Normal
         this.slotViewState = (this.game?.slotViewState || 'Normal');
-
         this.hideButtons = [];
 
-        // Lines configuration
         this.Line = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         this.gameLine = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        // Bet configuration from game
         this.Bet = this.game?.bet ? this.game.bet.split(',').map(b => parseInt(b.trim())) : [1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 100, 200, 300];
 
         this.Balance = this.user?.balance ?? 0;
+        this.SymbolGame = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'];
 
-        // Symbol game configuration
-        this.SymbolGame = ['2', '3', '4', '5', '6', '7', '8'];
-
-        // Bank and percentage settings
         this.Bank = this.game?.balance ?? 1000;
         this.Percent = this.shop?.percent ?? 10;
         this.WinGamble = this.game?.rezerv ?? 0;
@@ -107,7 +91,6 @@ export class SlotSettings extends BaseSlotSettings {
         this.slotCurrency = this.shop?.currency ?? 'USD';
         this.count_balance = this.user?.count_balance ?? 0;
 
-        // Handle special percentage cases
         if ((this.user?.address ?? 0) > 0 && this.user?.count_balance === 0) {
             this.Percent = 0;
             this.jpgPercentZero = true;
@@ -115,13 +98,11 @@ export class SlotSettings extends BaseSlotSettings {
             this.Percent = 100;
         }
 
-        // Initialize reel strips from GameReel if available
         this.initializeReelStrips();
     }
 
     private initializeReelStrips(): void {
         const reelStrips = this.gameDataStatic?.reelStrips;
-
         if (reelStrips) {
             for (const reelStrip of ['reelStrip1', 'reelStrip2', 'reelStrip3', 'reelStrip4', 'reelStrip5', 'reelStrip6']) {
                 if (reelStrips[reelStrip] && reelStrips[reelStrip].length > 0) {
@@ -165,7 +146,6 @@ export class SlotSettings extends BaseSlotSettings {
         const pref = garantType !== 'bet' ? '_bonus' : '';
         this.AllBet = bet * lines;
 
-        // Get RTP control configuration
         const linesPercentConfigSpin = this.getLinesPercentConfig('spin');
         const linesPercentConfigBonus = this.getLinesPercentConfig('bonus');
 
@@ -257,7 +237,6 @@ export class SlotSettings extends BaseSlotSettings {
             returnValue = ['win', winLimit];
         }
 
-        // Special case for low balance
         if (garantType === 'bet' && this.GetBalance() <= (2 / this.CurrentDenom)) {
             const randomPush = this.randomInt(1, 10);
             if (randomPush === 1) {
@@ -267,135 +246,6 @@ export class SlotSettings extends BaseSlotSettings {
         }
 
         return returnValue;
-    }
-
-    public GetRandomScatterPos(rp: string[]): number {
-        const rpResult: number[] = [];
-
-        for (let i = 0; i < rp.length; i++) {
-            if (rp[i] === '0') {
-                if (rp[i + 1] && rp[i - 1]) {
-                    rpResult.push(i);
-                }
-                if (rp[i - 1] && rp[i - 2]) {
-                    rpResult.push(i - 1);
-                }
-                if (rp[i + 1] && rp[i + 2]) {
-                    rpResult.push(i + 1);
-                }
-            }
-        }
-
-        this.shuffleArray(rpResult);
-
-        if (rpResult.length === 0) {
-            rpResult[0] = this.randomInt(2, rp.length - 3);
-        }
-
-        return rpResult[0];
-    }
-
-    public GetReelStrips(winType: string, slotEvent: string): ReelStrips {
-        // Note: FortuneRangersNET PHP code mentions special reels structure (3-3-4-4-4 layout possibly?)
-        // The PHP code does:
-        /*
-        if( $index == 1 || $index == 2 ) { ... $reel['reel'.$index][0]..[3] = ''; $reel['reel'.$index][4] = ''; $reel['reel'.$index][5] = ''; }
-        if( $index == 3 || $index == 4 ) { ... $reel['reel'.$index][0]..[3]... }
-        if( $index == 5 ) { ... }
-        */
-        // Let's implement this logic.
-
-        const prs: { [key: number]: number } = {};
-
-        if (winType !== 'bonus') {
-            // Regular spin - random positions
-            for (let index = 0; index < ['reelStrip1', 'reelStrip2', 'reelStrip3', 'reelStrip4', 'reelStrip5', 'reelStrip6'].length; index++) {
-                const reelStrip = `reelStrip${index + 1}`;
-                const reelData = (this as any)[reelStrip];
-                if (Array.isArray(reelData) && reelData.length > 0) {
-                    prs[index + 1] = this.randomInt(0, reelData.length - 3);
-                }
-            }
-        } else {
-            // Bonus spin - ensure scatters
-            const reelsId: number[] = [];
-            const prsLocal: { [key: number]: number } = {};
-
-            for (let index = 0; index < ['reelStrip1', 'reelStrip2', 'reelStrip3', 'reelStrip4', 'reelStrip5', 'reelStrip6'].length; index++) {
-                const reelStrip = `reelStrip${index + 1}`;
-                const reelData = (this as any)[reelStrip];
-                if (Array.isArray(reelData) && reelData.length > 0) {
-                    prsLocal[index + 1] = this.GetRandomScatterPos(reelData);
-                    reelsId.push(index + 1);
-                }
-            }
-
-            const scattersCnt = this.randomInt(3, reelsId.length);
-            this.shuffleArray(reelsId);
-
-            for (let i = 0; i < reelsId.length; i++) {
-                if (i < scattersCnt) {
-                    prs[reelsId[i]] = this.GetRandomScatterPos((this as any)[`reelStrip${reelsId[i]}`]);
-                } else {
-                    const reelData = (this as any)[`reelStrip${reelsId[i]}`];
-                    prs[reelsId[i]] = this.randomInt(0, reelData.length - 3);
-                }
-            }
-        }
-
-        const reel: ReelStrips = {
-            rp: []
-        };
-
-        for (const [index, value] of Object.entries(prs)) {
-            const reelIndex = parseInt(index);
-            const key = (this as any)[`reelStrip${reelIndex}`];
-            if (key && key.length > 0) {
-                const cnt = key.length;
-                // Wrapping logic handled via modulo in TS generally better but following PHP indices pattern
-
-                const p_minus_1 = (value - 1 + cnt) % cnt;
-                const p0 = value % cnt;
-                const p1 = (value + 1) % cnt;
-                const p2 = (value + 2) % cnt;
-                const p3 = (value + 3) % cnt; // Needed for Reel 5
-
-                if (reelIndex === 1 || reelIndex === 2) {
-                    reel[`reel${reelIndex}`] = [
-                        key[p_minus_1],
-                        key[p0],
-                        key[p1],
-                        '',
-                        '',
-                        ''
-                    ];
-                }
-                if (reelIndex === 3 || reelIndex === 4) {
-                    reel[`reel${reelIndex}`] = [
-                        key[p_minus_1],
-                        key[p0],
-                        key[p1],
-                        key[p2],
-                        '',
-                        ''
-                    ];
-                }
-                if (reelIndex === 5) {
-                    reel[`reel${reelIndex}`] = [
-                        key[p_minus_1],
-                        key[p0],
-                        key[p1],
-                        key[p2],
-                        key[p3],
-                        ''
-                    ];
-                }
-
-                (reel['rp'] as number[]).push(value);
-            }
-        }
-
-        return reel;
     }
 
     public getNewSpin(game: any, spinWin: number, bonusWin: number, lines: number, garantType: string = 'bet'): any {
@@ -442,24 +292,186 @@ export class SlotSettings extends BaseSlotSettings {
         return win[number];
     }
 
-    private getLinesPercentConfig(type: string): { [key: string]: any } {
-        const defaultConfig = {
-            'line1': { '1_100': 20 },
-            'line3': { '1_100': 15 },
-            'line5': { '1_100': 12 },
-            'line7': { '1_100': 10 },
-            'line9': { '1_100': 8 },
-            'line10': { '1_100': 6 },
-            'line1_bonus': { '1_100': 100 },
-            'line3_bonus': { '1_100': 80 },
-            'line5_bonus': { '1_100': 60 },
-            'line7_bonus': { '1_100': 50 },
-            'line9_bonus': { '1_100': 40 },
-            'line10_bonus': { '1_100': 35 }
+    public GetRandomScatterPos(rp: string[]): number {
+        const rpResult: number[] = [];
+
+        for (let i = 0; i < rp.length; i++) {
+            if (rp[i] == '0') {
+                if (rp[i + 1] && rp[i - 1]) {
+                    rpResult.push(i);
+                }
+                if (rp[i - 1] && rp[i - 2]) {
+                    rpResult.push(i - 1);
+                }
+                if (rp[i + 1] && rp[i + 2]) {
+                    rpResult.push(i + 1);
+                }
+            }
+        }
+
+        this.shuffleArray(rpResult);
+
+        if (rpResult.length === 0) {
+            rpResult[0] = this.randomInt(2, rp.length - 3);
+        }
+
+        return rpResult[0];
+    }
+
+    public GetGambleSettings(): number {
+        const spinWin = this.randomInt(1, this.WinGamble ?? 0);
+        return spinWin;
+    }
+
+    public SymbolUpgrade(reels: any, fCnt: number): string {
+        const RespinId = this.GetGameData(this.slotId + 'RespinId') || 0;
+        const respinIdClamped = Math.min(RespinId, 5);
+
+        const waysLimit: number[][][] = [
+            [[2], [1, 2, 3], [0, 1, 2, 3, 4], [1, 2, 3], [2]],
+            [[1, 2, 3], [1, 2, 3], [0, 1, 2, 3, 4], [1, 2, 3], [2]],
+            [[1, 2, 3], [1, 2, 3], [0, 1, 2, 3, 4], [1, 2, 3], [1, 2, 3]],
+            [[1, 2, 3], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [1, 2, 3]],
+            [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [1, 2, 3]],
+            [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+        ];
+
+        let featureStr = '';
+        const randomwildspArr: string[] = [];
+        const cSym0 = this.randomInt(4, 13);
+        const cSym1 = cSym0 - 1;
+
+        for (let r = 1; r <= 5; r++) {
+            const curWays = waysLimit[respinIdClamped][r - 1];
+            for (let i = 0; i < curWays.length; i++) {
+                const p = curWays[i];
+                if (reels[`reel${r}`][p] == cSym0) {
+                    reels[`reel${r}`][p] = cSym1;
+                    // PHP Uses keys $pw ($i here) instead of value $p for reporting position index?
+                    // PHP: foreach($curWays as $pw => $p) { ... $randomwildspArr[] = '...'.($r-1).'%2C'.$pw.'...'; }
+                    // Confirmed: PHP uses $pw (index within the active symbol array) for coordinate reporting, not the row value ($p).
+                    // Actually, let's verify if 'index' ($i) corresponds to the 'active symbol index'.
+                    // Yes, curWays lists the row indices that are active. So $i is the visual index (0 to length-1).
+                    // But wait, the client expects absolute coordinates or relative?
+                    // PHP: '...pos=' . ($r-1) . '%2C' . $pw
+                    // So it uses column index (0-4) and the INDEX inside curWays.
+                    // This means visual position on the stripped-down reel view?
+                    // No, wait. $curWays is array of row indices e.g. [1, 2, 3].
+                    // $pw is 0, 1, 2.
+                    // So it reports (column, active_symbol_index).
+                    randomwildspArr.push(`%28${r - 1}%2C${i}%29`);
+                }
+            }
+        }
+
+        featureStr = `&features.i${fCnt}.data.to=SYM${cSym1}&features.i${fCnt}.type=SymbolUpgrade&features.i${fCnt}.data.positions=${randomwildspArr.join('%2C')}&features.i${fCnt}.data.from=SYM${cSym0}`;
+        return featureStr;
+    }
+
+    public RandomWilds(reels: any, fCnt: number): string {
+        const RespinId = this.GetGameData(this.slotId + 'RespinId') || 0;
+        const respinIdClamped = Math.min(RespinId, 5);
+
+        const waysLimit: number[][][] = [
+            [[2], [1, 2, 3], [0, 1, 2, 3, 4], [1, 2, 3], [2]],
+            [[1, 2, 3], [1, 2, 3], [0, 1, 2, 3, 4], [1, 2, 3], [2]],
+            [[1, 2, 3], [1, 2, 3], [0, 1, 2, 3, 4], [1, 2, 3], [1, 2, 3]],
+            [[1, 2, 3], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [1, 2, 3]],
+            [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [1, 2, 3]],
+            [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+        ];
+
+        let featureStr = '';
+        const randomwildspArr: string[] = [];
+        let wcnt = 0;
+
+        for (let rr = 1; rr <= 50; rr++) {
+            for (let r = 2; r <= 5; r++) {
+                const curWays = waysLimit[respinIdClamped][r - 1];
+                for (let i = 0; i < curWays.length; i++) {
+                    const p = curWays[i];
+                    if (this.randomInt(1, 5) === 1 && wcnt < 3) {
+                        reels[`reel${r}`][p] = '1';
+                        // PHP uses $pw (key) -> i
+                        randomwildspArr.push(`%28${r - 1}%2C${i}%29`);
+                        wcnt++;
+                    }
+                }
+            }
+            featureStr = `&features.i${fCnt}.type=RandomWilds&features.i${fCnt}.data.positions=${randomwildspArr.join('%2C')}`;
+            if (randomwildspArr.length > 0) {
+                break;
+            }
+        }
+        return featureStr;
+    }
+
+    public GetReelStrips(winType: string, slotEvent: string): any {
+        if (slotEvent == 'freespin') {
+            // Logic for free spins if specific strips logic is needed
+            // Assuming base strips logic handles it via available properties
+        }
+
+        const prs: { [key: number]: number } = {};
+
+        if (winType != 'bonus') {
+            for (let index = 0; index < ['reelStrip1', 'reelStrip2', 'reelStrip3', 'reelStrip4', 'reelStrip5', 'reelStrip6'].length; index++) {
+                const reelStrip = `reelStrip${index + 1}`;
+                const reelData = (this as any)[reelStrip];
+                if (Array.isArray(reelData) && reelData.length > 0) {
+                    prs[index + 1] = this.randomInt(0, reelData.length - 3);
+                }
+            }
+        } else {
+            const reelsId = [];
+            for(let i=1; i<=6; i++) {
+                if((this as any)[`reelStrip${i}`]) reelsId.push(i);
+            }
+
+            const scattersCnt = this.randomInt(3, reelsId.length);
+            this.shuffleArray(reelsId);
+
+            for (let i = 0; i < reelsId.length; i++) {
+                const idx = reelsId[i];
+                if (i < scattersCnt) {
+                    prs[idx] = this.GetRandomScatterPos((this as any)[`reelStrip${idx}`]);
+                } else {
+                    prs[idx] = this.randomInt(0, (this as any)[`reelStrip${idx}`].length - 3);
+                }
+            }
+        }
+
+        const reel: any = {
+            rp: []
         };
 
+        for (const [index, value] of Object.entries(prs)) {
+            const reelIndex = parseInt(index);
+            const key = (this as any)[`reelStrip${reelIndex}`];
+            if (key && key.length > 0) {
+                const cnt = key.length;
+                const v_minus_1 = value - 1 < 0 ? key[cnt - 1] : key[value - 1];
+
+                reel[`reel${reelIndex}`] = [];
+                reel[`reel${reelIndex}`][0] = v_minus_1;
+                reel[`reel${reelIndex}`][1] = key[value];
+                reel[`reel${reelIndex}`][2] = key[value + 1];
+                reel[`reel${reelIndex}`][3] = key[value + 2];
+                reel[`reel${reelIndex}`][4] = key[value + 3];
+                reel[`reel${reelIndex}`][5] = '';
+                reel['rp'].push(value);
+            }
+        }
+
+        return reel;
+    }
+
+    private getLinesPercentConfig(type: string): { [key: string]: any } {
+        const defaultConfig = {
+            'line10': { '0_100': 100 }
+        };
         const configKey = type === 'spin' ? 'linesPercentConfigSpin' : 'linesPercentConfigBonus';
-        return this.gameDataStatic?.[configKey] || defaultConfig;
+        return this.gameDataStatic?.[configKey] || {};
     }
 
     private randomInt(min: number, max: number): number {
